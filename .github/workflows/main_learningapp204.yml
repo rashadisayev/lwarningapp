@@ -1,7 +1,4 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Build and deploy ASP app to Azure Web App - learningapp204
+name: Build and deploy ASP.NET Core app to Azure Web App - learningapp204
 
 on:
   push:
@@ -14,26 +11,34 @@ jobs:
     runs-on: windows-latest
 
     steps:
+      # Step 1: Checkout the code from the repository
       - uses: actions/checkout@v4
 
-      - name: Setup MSBuild path
-        uses: microsoft/setup-msbuild@v1.0.2
+      # Step 2: Setup .NET Core SDK
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x' # Adjust version as needed for your project
 
-      - name: Setup NuGet
-        uses: NuGet/setup-nuget@v1.0.5
+      # Step 3: Restore dependencies
+      - name: Restore dependencies
+        run: dotnet restore
 
-      - name: Restore NuGet packages
-        run: nuget restore
+      # Step 4: Build the application
+      - name: Build the application
+        run: dotnet build --configuration Release
 
-      - name: Publish to folder
-        run: msbuild /nologo /verbosity:m /t:Build /t:pipelinePreDeployCopyAllFilesToOneFolder /p:_PackageTempDir="\published\"
+      # Step 5: Publish the application to the output folder
+      - name: Publish the application
+        run: dotnet publish --configuration Release --output ./publish
 
+      # Step 6: Upload the published output as an artifact for deployment
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: ASP-app
-          path: '/published/**'
-
+          path: ./publish/
+  
   deploy:
     runs-on: windows-latest
     needs: build
@@ -41,14 +46,16 @@ jobs:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write #This is required for requesting the JWT
+      id-token: write # Required for requesting the JWT token
 
     steps:
+      # Step 1: Download the artifact generated in the build job
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: ASP-app
-      
+
+      # Step 2: Login to Azure
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -56,11 +63,11 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_0319ED9CD5C446CDA5D527CF624EB669 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_2B6A3224E5984439A4B789B6B2C760C6 }}
 
+      # Step 3: Deploy the artifact to Azure Web App
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'learningapp204'
           slot-name: 'Production'
-          package: .
-          
+          package: ./publish
