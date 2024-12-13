@@ -22,15 +22,15 @@ jobs:
 
       # Step 3: Restore dependencies
       - name: Restore dependencies
-        run: dotnet restore learningApp/learningApp.csproj
+        run: dotnet restore src/learningApp/learningApp.csproj
 
       # Step 4: Build the project
       - name: Build the project
-        run: dotnet build learningApp/learningApp.csproj --configuration Release
+        run: dotnet build src/learningApp/learningApp.csproj --configuration Release
 
       # Step 5: Publish the application
       - name: Publish the application
-        run: dotnet publish learningApp/learningApp.csproj --configuration Release --output ${{ github.workspace }}/publish
+        run: dotnet publish src/learningApp/learningApp.csproj --configuration Release --output ${{ github.workspace }}/publish
 
       # Step 6: Upload the artifact for deployment
       - name: Upload artifact for deployment job
