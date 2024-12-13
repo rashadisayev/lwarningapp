@@ -11,34 +11,34 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      # Step 1: Checkout the code from the repository
+      # Step 1: Checkout the code
       - uses: actions/checkout@v4
 
-      # Step 2: Setup .NET Core SDK
+      # Step 2: Setup .NET Core
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '8.0.x' # Adjust version as needed
+          dotnet-version: '8.0.x'
 
       # Step 3: Restore dependencies
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore learningApp/learningApp.csproj
 
-      # Step 4: Build the application
-      - name: Build the application
-        run: dotnet build --configuration Release
+      # Step 4: Build the project
+      - name: Build the project
+        run: dotnet build learningApp/learningApp.csproj --configuration Release
 
-      # Step 5: Publish the application to the output folder
+      # Step 5: Publish the application
       - name: Publish the application
-        run: dotnet publish --configuration Release --output ${{ github.workspace }}/publish
+        run: dotnet publish learningApp/learningApp.csproj --configuration Release --output ${{ github.workspace }}/publish
 
-      # Step 6: Upload the published output as an artifact for deployment
+      # Step 6: Upload the artifact for deployment
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: ASP-app
           path: ${{ github.workspace }}/publish/
-  
+
   deploy:
     runs-on: windows-latest
     needs: build
@@ -49,7 +49,7 @@ jobs:
       id-token: write # Required for requesting the JWT token
 
     steps:
-      # Step 1: Download the artifact generated in the build job
+      # Step 1: Download the artifact from the build job
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
@@ -63,7 +63,7 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_0319ED9CD5C446CDA5D527CF624EB669 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_2B6A3224E5984439A4B789B6B2C760C6 }}
 
-      # Step 3: Deploy the artifact to Azure Web App
+      # Step 3: Deploy to Azure Web App
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
