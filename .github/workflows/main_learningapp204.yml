@@ -30,7 +30,7 @@ jobs:
 
       # Step 5: Publish the application to the output folder
       - name: Publish the application
-        run: dotnet publish --configuration Release --output ${{ github.workspace }}/publish
+        run: dotnet publish --configuration Release --property:PublishDir=${{ github.workspace }}/publish
 
       # Step 6: Upload the published output as an artifact for deployment
       - name: Upload artifact for deployment job
